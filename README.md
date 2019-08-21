@@ -1,15 +1,15 @@
-#scrapy-cheatsheet
+# scrapy-cheatsheet
 
-##Export to CSV
+## Export to CSV
 
-####settings.py
+#### settings.py
 ```python
 ITEM_PIPELINES = {
    'discogs.pipelines.CsvPipeline': 800
 }
 ```
 
-####pipelines.py
+#### pipelines.py
 ```python
 import csv
 def write_to_csv(item):
