@@ -22,3 +22,11 @@ class CsvPipeline(object):
         write_to_csv(item)
         return item
 ```
+
+## Switching webpage iframe (Dynamic Content)
+
+```python
+
+driver.switch_to.frame("name_of_iframe")
+
+```
