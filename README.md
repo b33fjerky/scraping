@@ -1,6 +1,6 @@
 # scrapy-cheatsheet
 
-## Export to CSV
+## EXPORT to CSV
 
 #### settings.py
 ```python
@@ -23,6 +23,7 @@ class CsvPipeline(object):
 ```
 ### OR
 ```python
+import csv
 def write_to_csv(item):
 	file_exists = os.path.isfile("items.csv")
 	
@@ -49,7 +50,7 @@ class CsvPipeline(object):
 		write_to_csv(item)
 		return item
 ```
-## Javascript (Dynamic Content)
+## JAVASCRIPT (Dynamic Content)
 
 ### Switching webpage iframe 
 ```python
@@ -60,15 +61,47 @@ driver.switch_to.frame("name_of_iframe")
 .
 .
 ```
-### Parsing response to html and/or using Regex
+### Parsing response to html with lxml and/or using Regex
 ```python
-parser = html.fromstring(response.text)
-XPATH_DESCRIP = "//article[@class='merchant']//text()"
-XPATH_FACEB   = "//a[@title='Facebook']/@href"
-ypItem['yplistingDescript'] =  parser.xpath(XPATH_DESCRIP)
-ypItem['yplistingSocial']	=  list(dict.fromkeys(parser.xpath(XPATH_SOCIAL)))
-##     -	-  	 -	  -	   -     ^ Removes duplicates 
-ypItem['yplistingImg']		=  re.findall("(https:\/\/ssmscdn\.yp\.ca\/image.*?)\"", response.text)))[:10]
-##	   -  	-	 -	  -	   ^ Grab first 10 results
+from lxml import html
+.
+.
+def parse(self, response):
+	parser = html.fromstring(response.text)
+	XPATH_DESCRIP = "//article[@class='merchant']//text()"
+	XPATH_FACEB   = "//a[@title='Facebook']/@href"
+	ypItem['yplistingDescript'] =  parser.xpath(XPATH_DESCRIP)
+	ypItem['yplistingSocial']	=  list(dict.fromkeys(parser.xpath(XPATH_SOCIAL)))
+	##     -	-  	 -	  -	  ^ Removes duplicates 
+	ypItem['yplistingImg']		=  re.findall("(https:\/\/ssmscdn\.yp\.ca\/image.*?)\"", response.text)))[:10]
+	##	   -  	-	 -	  -	   -	-	 -	  -	   -	^ Grab first 10 results
+```
+## ITEMS
 
+### Formating item fields
+```python
+class Items():
+	listingPhone = scrapy.Field(
+		input_processor=MapCompose(str.strip),
+        output_processor=TakeFirst()
+		) ##	-	-	-	-	-	-	^ Removes List
+	listingTitle = scrapy.Field(
+		input_processor=MapCompose(str.strip),
+        output_processor=TakeFirst()
+		)
+```
+### Passing item.field to callback {meta arguments)}
+```python
+def parse(self, response):
+    for sel in response.xpath('//tbody/tr'):
+        item = HeroItem()
+        # Item assignment here
+        url = 'https://' + item['server'] + '.battle.net/' + sel.xpath('td[@class="cell-BattleTag"]//a/@href').extract()[0].strip()
+
+        yield Request(url, callback=self.parse_profile, meta={'hero_item': item})
+
+def parse_profile(self, response):
+    item = response.meta.get('hero_item')
+    item['weapon'] = response.xpath('//li[@class="slot-mainHand"]/a[@class="slot-link"]/@href').extract()[0].split('/')[4]
+    yield item
 ```
