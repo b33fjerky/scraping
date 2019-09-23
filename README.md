@@ -52,7 +52,7 @@ class CsvPipeline(object):
 ```
 ## JAVASCRIPT (Dynamic Content)
 
-### Switching webpage iframe 
+### Switching webpage iframe (Selenium)
 ```python
 .
 .
@@ -72,9 +72,9 @@ def parse(self, response):
 	XPATH_FACEB   = "//a[@title='Facebook']/@href"
 	ypItem['yplistingDescript'] =  parser.xpath(XPATH_DESCRIP)
 	ypItem['yplistingSocial']	=  list(dict.fromkeys(parser.xpath(XPATH_SOCIAL)))
-	##     -	-  	 -	  -	  ^ Removes duplicates 
+	##     -	-  	 -	    ^ Removes duplicates 
 	ypItem['yplistingImg']		=  re.findall("(https:\/\/ssmscdn\.yp\.ca\/image.*?)\"", response.text)))[:10]
-	##	   -  	-	 -	  -	   -	-	 -	  -	   -	^ Grab first 10 results
+	##	   -  	-	 -	  -	   -	-	 -	  -	   -	-      Grab first 10 results ^
 ```
 ## ITEMS
 
@@ -84,7 +84,7 @@ class Items():
 	listingPhone = scrapy.Field(
 		input_processor=MapCompose(str.strip),
         output_processor=TakeFirst()
-		) ##	-	-	-	-	-	-	^ Removes List
+		) ##	-	-	- ^ Removes List
 	listingTitle = scrapy.Field(
 		input_processor=MapCompose(str.strip),
         output_processor=TakeFirst()
@@ -104,4 +104,12 @@ def parse_profile(self, response):
     item = response.meta.get('hero_item')
     item['weapon'] = response.xpath('//li[@class="slot-mainHand"]/a[@class="slot-link"]/@href').extract()[0].split('/')[4]
     yield item
+```
+
+### Bypass CloudFlare protection
+```python
+import cfscrape
+scraper = cfscrape.create_scraper()
+response = html.fromstring(scraper.get("http://www.firstshop.co.za" + product).content)
+# HOW TO INTEGRATE THAT INTO SCRAPY (Checkout cf token agent Google)
 ```
